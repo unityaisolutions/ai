@@ -24,6 +24,16 @@ import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+import { Button } from "./ui/button";
+
+const handleImageDownload = (format: string, url: string) => {
+  const link = document.createElement("a");
+  link.href = url.replace(/\.(jpg|png|webp)$/, `.${format}`);
+  link.download = `image.${format}`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 const PurePreviewMessage = ({
   chatId,
@@ -86,6 +96,8 @@ const PurePreviewMessage = ({
               mode === "edit",
             "max-w-[calc(100%-2.5rem)] sm:max-w-[min(fit-content,80%)]":
               message.role === "user" && mode !== "edit",
+            // Make space for large image previews
+            "gap-6": message.parts?.some((p) => (p as { type: string }).type === "data-image"),
           })}
         >
           {attachmentsFromMessage.length > 0 && (
@@ -163,6 +175,46 @@ const PurePreviewMessage = ({
                   </div>
                 );
               }
+            }
+
+            if ((part as { type: string }).type === "data-image") {
+              const imagePart = part as { type: "data-image"; data: { url: string } };
+              const url = imagePart.data.url;
+              return (
+                <div key={key} className="flex flex-col items-center">
+                  <img
+                    src={url}
+                    alt="Generated image"
+                    className="max-w-full rounded-lg"
+                  />
+                  <div className="flex justify-center gap-2 mt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleImageDownload('jpg', url)}
+                      className="text-xs"
+                    >
+                      Download JPG
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleImageDownload('png', url)}
+                      className="text-xs"
+                    >
+                      Download PNG
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleImageDownload('webp', url)}
+                      className="text-xs"
+                    >
+                      Download WEBP
+                    </Button>
+                  </div>
+                </div>
+              );
             }
 
             if (type === "tool-getWeather") {

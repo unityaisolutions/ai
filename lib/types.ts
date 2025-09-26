@@ -43,13 +43,45 @@ export type CustomUIDataTypes = {
   clear: null;
   finish: null;
   usage: AppUsage;
+  image: {
+    url: string;
+  };
 };
 
 export type ChatMessage = UIMessage<
   MessageMetadata,
   CustomUIDataTypes,
   ChatTools
->;
+> & {
+  parts?: Array<
+    | {
+        type: "text";
+        text: string;
+      }
+    | {
+        type: "file";
+        filename?: string;
+        mediaType?: string;
+        url?: string;
+      }
+    | {
+        type: "image";
+        url: string;
+      }
+    | {
+        type: "reasoning";
+        text: string;
+      }
+    | {
+        type: keyof ChatTools;
+        toolCallId?: string;
+        input?: unknown;
+        output?: unknown;
+        state?: "input-available" | "output-available";
+      }
+    // Add other existing part types as needed to maintain compatibility
+  >;
+};
 
 export type Attachment = {
   name: string;
