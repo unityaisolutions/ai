@@ -101,11 +101,11 @@ export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
   return messages.map((message) => ({
     id: message.id,
     role: message.role as 'user' | 'assistant' | 'system',
-    parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
+    parts: message.parts as ChatMessage['parts'],
     metadata: {
       createdAt: formatISO(message.createdAt),
     },
-  }));
+  } as ChatMessage));
 }
 
 export function getTextFromMessage(message: ChatMessage): string {

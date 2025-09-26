@@ -1,5 +1,7 @@
 "use client";
 
+import type { DataUIPart } from "ai";
+import type { CustomUIDataTypes } from "@/lib/types";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSearchParams } from "next/navigation";
@@ -97,9 +99,11 @@ export function Chat({
       },
     }),
     onData: (dataPart) => {
-      setDataStream((ds) => (ds ? [...ds, dataPart] : []));
-      if (dataPart.type === "data-usage") {
-        setUsage(dataPart.data);
+      const typedDataPart = dataPart as DataUIPart<CustomUIDataTypes>;
+      console.log('DataPart received:', { type: typedDataPart.type, data: typedDataPart.data });
+      setDataStream((ds) => (ds ? [...ds, typedDataPart] : []));
+      if (typedDataPart.type === "data-usage") {
+        setUsage(typedDataPart.data);
       }
     },
     onFinish: () => {
