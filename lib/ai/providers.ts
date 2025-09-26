@@ -30,7 +30,9 @@ export const myProvider = isTestEnvironment
           model: gateway.languageModel("xai/grok-4-fast-reasoning"),
           middleware: extractReasoningMiddleware({ tagName: "think" }),
         }),
+        "chat-model-image-gen": gateway.languageModel("google/gemini-2.5-flash-image-preview"),
         "title-model": gateway.languageModel("xai/grok-2-1212"),
-        "artifact-model": gateway.languageModel("xai/grok-2-1212"),
+        "artifact-model": gateway.languageModel("google/gemini-2.5-flash-image-preview"),
+        "image-generation-agent": gateway.languageModel("google/gemini-2.5-flash-image-preview"),
       },
     });

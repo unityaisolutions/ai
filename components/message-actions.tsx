@@ -6,7 +6,7 @@ import { useCopyToClipboard } from "usehooks-ts";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { Action, Actions } from "./elements/actions";
-import { CopyIcon, PencilEditIcon, ThumbDownIcon, ThumbUpIcon } from "./icons";
+import { CopyIcon, DownloadIcon, PencilEditIcon, ThumbDownIcon, ThumbUpIcon } from "./icons";
 
 export function PureMessageActions({
   chatId,
@@ -66,11 +66,100 @@ export function PureMessageActions({
     );
   }
 
+  // Check if message contains downloadable images
+  const hasImages = message.parts?.some(
+    (part) => {
+      const typedPart = part as any;
+      return typedPart.type === "image" && typedPart.url;
+    }
+  );
+
+  const handleImageDownload = async (format: 'jpg' | 'png' | 'webp') => {
+    const rawParts = message.parts || [];
+    const imagePart = rawParts.find(
+      (part) => {
+        const typedPart = part as any;
+        return typedPart.type === "image" && typedPart.url;
+      }
+    );
+
+    if (!imagePart) {
+      toast.error("No image found to download");
+      return;
+    }
+
+    const typedImagePart = imagePart as any;
+    if (!typedImagePart.url) {
+      toast.error("No image URL found to download");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/convert-image?url=${encodeURIComponent(typedImagePart.url)}&format=${format}&download=true`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `generated-image.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(downloadUrl);
+
+      toast.success(`Downloaded image as ${format.toUpperCase()}`);
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Failed to download image");
+    }
+  };
+
   return (
     <Actions className="-ml-0.5">
       <Action onClick={handleCopy} tooltip="Copy">
         <CopyIcon />
       </Action>
+
+      {hasImages && (
+        <Action tooltip="Download Image" className="relative group">
+          <DownloadIcon />
+          <div className="absolute right-0 top-full mt-1 w-32 bg-background border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-50">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleImageDownload('jpg');
+              }}
+              className="block w-full text-left px-3 py-2 text-sm hover:bg-accent"
+            >
+              Download JPG
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleImageDownload('png');
+              }}
+              className="block w-full text-left px-3 py-2 text-sm hover:bg-accent"
+            >
+              Download PNG
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleImageDownload('webp');
+              }}
+              className="block w-full text-left px-3 py-2 text-sm hover:bg-accent"
+            >
+              Download WEBP
+            </button>
+          </div>
+        </Action>
+      )}
 
       <Action
         data-testid="message-upvote"

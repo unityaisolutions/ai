@@ -18,4 +18,9 @@ export const chatModels: ChatModel[] = [
     description:
       "Fast reasoning model with chain-of-thought for complex problems",
   },
+  {
+    id: "chat-model-image-gen",
+    name: "Image Generation Agent",
+    description: "Multimodal model for text, vision, and image generation",
+  },
 ];

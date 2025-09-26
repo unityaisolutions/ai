@@ -1,4 +1,5 @@
 import { geolocation } from "@vercel/functions";
+import { put } from "@vercel/blob";
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -174,14 +175,53 @@ export async function POST(request: Request) {
     let finalMergedUsage: AppUsage | undefined;
 
     const stream = createUIMessageStream({
-      execute: ({ writer: dataStream }) => {
+      execute: async ({ writer: dataStream }) => {
+        // Create a transform stream to intercept image deltas and upload to Vercel Blob
+        const imageUploadStream = new TransformStream({
+          async transform(chunk, controller) {
+            if (chunk.type === "data-imageDelta") {
+              const base64Data = chunk.data;
+              try {
+                // Upload to Vercel Blob
+                const blob = await put(`generated-image-${Date.now()}-${generateUUID()}.png`,
+                  Buffer.from(base64Data, 'base64'),
+                  {
+                    access: 'public',
+                  }
+                );
+                
+                // Replace with URL reference
+                const urlPart = {
+                  type: "image",
+                  url: blob.url,
+                  mediaType: "image/png",
+                };
+                
+                controller.enqueue({
+                  ...chunk,
+                  data: urlPart,
+                });
+              } catch (error) {
+                console.error("Failed to upload image to blob:", error);
+                // Fallback to original base64
+                controller.enqueue(chunk);
+              }
+            } else {
+              controller.enqueue(chunk);
+            }
+          },
+          flush(controller) {
+            controller.terminate();
+          },
+        });
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:
-            selectedChatModel === "chat-model-reasoning"
+            selectedChatModel === "chat-model-reasoning" || selectedChatModel === "chat-model-image-gen"
               ? []
               : [
                   "getWeather",
@@ -239,11 +279,12 @@ export async function POST(request: Request) {
 
         result.consumeStream();
 
-        dataStream.merge(
-          result.toUIMessageStream({
-            sendReasoning: true,
-          })
-        );
+        // Pipe through image upload transform before merging
+        const transformedStream = result.toUIMessageStream({
+          sendReasoning: true,
+        }).pipeThrough(imageUploadStream);
+
+        dataStream.merge(transformedStream);
       },
       generateId: generateUUID,
       onFinish: async ({ messages }) => {
