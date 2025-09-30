@@ -181,37 +181,60 @@ const PurePreviewMessage = ({
               const imagePart = part as { type: "data-image"; data: { url: string } };
               const url = imagePart.data.url;
               return (
-                <div key={key} className="flex flex-col items-center">
-                  <img
-                    src={url}
-                    alt="Generated image"
-                    className="max-w-full rounded-lg"
-                  />
-                  <div className="flex justify-center gap-2 mt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleImageDownload('jpg', url)}
-                      className="text-xs"
-                    >
-                      Download JPG
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleImageDownload('png', url)}
-                      className="text-xs"
-                    >
-                      Download PNG
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleImageDownload('webp', url)}
-                      className="text-xs"
-                    >
-                      Download WEBP
-                    </Button>
+                <div key={key} className="w-full">
+                  <div className="flex flex-col gap-3 rounded-2xl border bg-muted/50 p-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <div className="size-4 rounded-full bg-blue-500 flex items-center justify-center">
+                        <svg className="size-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      Generated Image
+                    </div>
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="relative overflow-hidden rounded-lg border bg-background">
+                        <img
+                          src={url}
+                          alt="Generated image"
+                          className="max-w-full max-h-[600px] object-contain"
+                        />
+                      </div>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleImageDownload('jpg', url)}
+                          className="text-xs h-7 px-3"
+                        >
+                          <svg className="h-3 w-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Download JPG
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleImageDownload('png', url)}
+                          className="text-xs h-7 px-3"
+                        >
+                          <svg className="h-3 w-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Download PNG
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleImageDownload('webp', url)}
+                          className="text-xs h-7 px-3"
+                        >
+                          <svg className="h-3 w-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Download WEBP
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
